@@ -11,7 +11,9 @@
 ---
 
 ## 🎯 Executive Summary
+Model: https://huggingface.co/SaiTejaSrivilli/qwen-7b-sft-merged
 
+Tech: PyTorch, Transformers, PEFT, TRL, LoRA
 **Challenge**: Fine-tuning large language models traditionally requires expensive infrastructure and extensive computational resources.
 
 **Solution**: Implemented parameter-efficient fine-tuning using LoRA (Low-Rank Adaptation), achieving strong performance improvements while training only 0.5% of model parameters.
