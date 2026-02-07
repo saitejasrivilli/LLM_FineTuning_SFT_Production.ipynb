@@ -1,5 +1,3 @@
-# CELL: Final Professional README.md
-
 # 🚀 Production-Grade LLM Fine-Tuning Pipeline
 ### Supervised Fine-Tuning with LoRA on 7B Parameter Model
 
