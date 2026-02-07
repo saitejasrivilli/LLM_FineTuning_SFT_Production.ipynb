@@ -1,5 +1,5 @@
 import streamlit as st
-import requests
+from huggingface_hub import InferenceClient
 
 st.set_page_config(page_title="Qwen-7B Fine-tuned", page_icon="🤖", layout="wide")
 
@@ -7,43 +7,52 @@ st.title("🚀 Qwen-7B Fine-tuned Assistant")
 st.markdown("Fine-tuned with SFT+LoRA | **0.855 BERTScore** | **17% loss reduction**")
 st.markdown("---")
 
-st.info("⚠️ Model is a LoRA adapter requiring local inference with base model. See usage code below.")
+client = InferenceClient(model="SaiTejaSrivilli/qwen-7b-sft-merged")
 
-st.markdown("### 📊 Training Results")
-col1, col2, col3 = st.columns(3)
-col1.metric("Training Loss", "1.176", "-17%")
-col2.metric("BERTScore", "0.855", "+21%")
-col3.metric("Trainable Params", "0.5%", "35M/7B")
+col1, col2 = st.columns([3, 1])
 
-st.markdown("---")
+with col1:
+    prompt = st.text_area("💬 Your Question", placeholder="Ask me anything about science, tech, programming...", height=120)
 
-st.markdown("### 💻 How to Use")
+with col2:
+    max_tokens = st.slider("📏 Max Length", 50, 500, 200)
+    temperature = st.slider("🌡️ Temperature", 0.1, 1.5, 0.7, step=0.1)
 
-code = '''from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-
-base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
-model = PeftModel.from_pretrained(base, "SaiTejaSrivilli/qwen-3b-sft")
-tokenizer = AutoTokenizer.from_pretrained("SaiTejaSrivilli/qwen-3b-sft")
-
-inputs = tokenizer("Your question", return_tensors="pt")
-outputs = model.generate(**inputs, max_new_tokens=200)
-print(tokenizer.decode(outputs[0]))'''
-
-st.code(code, language="python")
-
-st.markdown("### 📝 Sample Outputs (from evaluation)")
-
-examples = {
-    "Explain quantum computing": "Quantum computing uses quantum bits that can exist in superposition...",
-    "Python fibonacci function": "def fibonacci(n):\n    if n <= 1: return n\n    return fibonacci(n-1) + fibonacci(n-2)",
-    "Climate change causes": "Main causes include greenhouse gas emissions, deforestation..."
-}
-
-for q, a in examples.items():
-    with st.expander(f"Q: {q}"):
-        st.write(f"**A:** {a}")
+if st.button("✨ Generate Response", type="primary", use_container_width=True):
+    if prompt.strip():
+        with st.spinner("🤖 Thinking..."):
+            try:
+                response = client.text_generation(
+                    prompt,
+                    max_new_tokens=max_tokens,
+                    temperature=temperature,
+                    do_sample=True,
+                    top_p=0.9
+                )
+                st.markdown("### 🤖 Response:")
+                st.success(response)
+            except Exception as e:
+                st.error(f"Error: {e}")
+    else:
+        st.warning("Please enter a question")
 
 st.markdown("---")
-st.markdown("🔗 [Model on HuggingFace](https://huggingface.co/SaiTejaSrivilli/qwen-3b-sft) | 💼 [LinkedIn](https://linkedin.com/in/saitejasrivilli) | 🐙 [GitHub](https://github.com/saitejasrivilli)")
+st.markdown("### 📝 Try These Examples:")
 
+examples = [
+    "Explain quantum computing in simple terms",
+    "Write a Python function to calculate fibonacci numbers",
+    "What are the main causes of climate change?",
+]
+
+for ex in examples:
+    if st.button(ex, key=ex):
+        st.rerun()
+
+st.markdown("---")
+st.markdown("🔗 [Model](https://huggingface.co/SaiTejaSrivilli/qwen-7b-sft-merged) | [GitHub](https://github.com/saitejasrivilli) | [LinkedIn](https://linkedin.com/in/saitejasrivilli)")
+```
+```
+# requirements.txt
+huggingface_hub>=0.20.0
+streamlit>=1.30.0
