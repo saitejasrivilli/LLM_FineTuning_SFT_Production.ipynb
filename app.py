@@ -52,4 +52,4 @@ for ex in examples:
 st.markdown("---")
 st.markdown("🔗 [Model](https://huggingface.co/SaiTejaSrivilli/qwen-7b-sft-merged) | [GitHub](https://github.com/saitejasrivilli) | [LinkedIn](https://linkedin.com/in/saitejasrivilli)")
  
-streamlit>=1.30.0
+ 
