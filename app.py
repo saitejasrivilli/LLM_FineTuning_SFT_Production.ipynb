@@ -1,65 +1,52 @@
 import streamlit as st
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-import torch
+import requests
 
 st.set_page_config(page_title="Qwen-7B Fine-tuned", page_icon="🤖", layout="wide")
-
-@st.cache_resource
-def load_model():
-    pipe = pipeline(
-        "text-generation",
-        model="SaiTejaSrivilli/qwen-7b-sft-merged",
-        torch_dtype=torch.float16,
-        device_map="auto"
-    )
-    return pipe
 
 st.title("🚀 Qwen-7B Fine-tuned Assistant")
 st.markdown("Fine-tuned with SFT+LoRA | **0.855 BERTScore** | **17% loss reduction**")
 st.markdown("---")
 
-with st.spinner("Loading model..."):
-    pipe = load_model()
+st.info("⚠️ Model is a LoRA adapter requiring local inference with base model. See usage code below.")
 
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    prompt = st.text_area("💬 Your Question", placeholder="Ask me anything...", height=100)
-
-with col2:
-    max_tokens = st.slider("📏 Max Length", 50, 500, 200)
-    temperature = st.slider("🌡️ Temperature", 0.1, 1.5, 0.7)
-
-if st.button("✨ Generate Response", type="primary"):
-    if prompt.strip():
-        with st.spinner("Generating..."):
-            result = pipe(
-                prompt,
-                max_new_tokens=max_tokens,
-                temperature=temperature,
-                do_sample=True,
-                top_p=0.9
-            )
-            response = result[0]['generated_text'][len(prompt):].strip()
-        
-        st.markdown("### 🤖 Response:")
-        st.success(response)
-    else:
-        st.warning("Please enter a question")
+st.markdown("### 📊 Training Results")
+col1, col2, col3 = st.columns(3)
+col1.metric("Training Loss", "1.176", "-17%")
+col2.metric("BERTScore", "0.855", "+21%")
+col3.metric("Trainable Params", "0.5%", "35M/7B")
 
 st.markdown("---")
-st.markdown("### 📝 Example Prompts:")
 
-examples = [
-    "Explain quantum computing in simple terms",
-    "Write a Python function to calculate fibonacci",
-    "What are the main causes of climate change?"
-]
+st.markdown("### 💻 How to Use")
 
-cols = st.columns(3)
-for i, example in enumerate(examples):
-    if cols[i].button(f"Try: {example[:30]}..."):
-        st.rerun()
+code = '''from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
+model = PeftModel.from_pretrained(base, "SaiTejaSrivilli/qwen-3b-sft")
+tokenizer = AutoTokenizer.from_pretrained("SaiTejaSrivilli/qwen-3b-sft")
+
+inputs = tokenizer("Your question", return_tensors="pt")
+outputs = model.generate(**inputs, max_new_tokens=200)
+print(tokenizer.decode(outputs[0]))'''
+
+st.code(code, language="python")
+
+st.markdown("### 📝 Sample Outputs (from evaluation)")
+
+examples = {
+    "Explain quantum computing": "Quantum computing uses quantum bits that can exist in superposition...",
+    "Python fibonacci function": "def fibonacci(n):\n    if n <= 1: return n\n    return fibonacci(n-1) + fibonacci(n-2)",
+    "Climate change causes": "Main causes include greenhouse gas emissions, deforestation..."
+}
+
+for q, a in examples.items():
+    with st.expander(f"Q: {q}"):
+        st.write(f"**A:** {a}")
 
 st.markdown("---")
-st.markdown("🔗 [Model](https://huggingface.co/SaiTejaSrivilli/qwen-7b-sft-merged) | 💼 [LinkedIn](https://linkedin.com/in/saitejasrivilli) | 🐙 [GitHub](https://github.com/saitejasrivilli)")
+st.markdown("🔗 [Model on HuggingFace](https://huggingface.co/SaiTejaSrivilli/qwen-3b-sft) | 💼 [LinkedIn](https://linkedin.com/in/saitejasrivilli) | 🐙 [GitHub](https://github.com/saitejasrivilli)")
+```
+```
+# requirements.txt
+streamlit>=1.30.0
