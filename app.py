@@ -46,7 +46,4 @@ for q, a in examples.items():
 
 st.markdown("---")
 st.markdown("🔗 [Model on HuggingFace](https://huggingface.co/SaiTejaSrivilli/qwen-3b-sft) | 💼 [LinkedIn](https://linkedin.com/in/saitejasrivilli) | 🐙 [GitHub](https://github.com/saitejasrivilli)")
-```
-```
-# requirements.txt
-streamlit>=1.30.0
+
